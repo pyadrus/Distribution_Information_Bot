@@ -22,12 +22,12 @@ async def forward_message(client, message, group_id_pars, group_id_post):
 
 
 async def post(account_id, group_id_pars, group_id_post):
-    # Создание экземпляра клиента Pyrogram
+    """Создание экземпляра клиента Pyrogram"""
     app = Client(f"accounts/{account_id}", api_id=tg_id, api_hash=tg_hash)
 
-    # Фильтр для обработки всех сообщений в исходной группе
     @app.on_message(filters.chat(int(group_id_pars)))
     async def forward_message_wrapper(client, message):
+        """Фильтр для обработки всех сообщений в исходной группе"""
         await forward_message(client, message, group_id_pars, group_id_post)
 
     # Запуск клиента Pyrogram

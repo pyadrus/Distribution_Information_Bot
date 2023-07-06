@@ -19,8 +19,8 @@ from system.dispatcher import dp, bot, tg_id, tg_hash
 clients = {}
 
 
-# Определение StatesGroup для управления ходом разговора
 class SessionCreation(StatesGroup):
+    """Определение StatesGroup для управления ходом разговора"""
     ask_number = State()
     ask_code = State()
     ask_2fa = State()
@@ -33,17 +33,17 @@ async def auth(callback_query: types.CallbackQuery):
     await SessionCreation.ask_number.set()
 
 
-# Обработчик получения номера телефона от пользователя
 @dp.message_handler(state=SessionCreation.ask_number, content_types=types.ContentTypes.TEXT)
 async def get_number(message: types.Message, state: FSMContext):
+    """Обработчик получения номера телефона от пользователя"""
     phone = message.text
     if re.match("\d{3}\d{3}\d{4}", phone):
         await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)
         async with state.proxy() as data:
             client_id = str(message.from_user.id)
-            session_folder = "accounts"
+            session_folder = f"accounts/{message.from_user.id}"
             os.makedirs(session_folder, exist_ok=True)
-            session_file = os.path.join(session_folder, client_id)
+            session_file = os.path.join(session_folder, f"{phone}")
             client = Client(session_file, tg_id, tg_hash)
             await client.connect()
             try:
@@ -68,9 +68,9 @@ async def get_number(message: types.Message, state: FSMContext):
         await SessionCreation.ask_number.set()
 
 
-# Обработчик получения кода подтверждения от пользователя
 @dp.message_handler(state=SessionCreation.ask_code, content_types=types.ContentTypes.TEXT)
 async def get_code(message: types.Message, state: FSMContext):
+    """Обработчик получения кода подтверждения от пользователя"""
     await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)
     code = message.text.replace('-', '')
     async with state.proxy() as _data:
@@ -99,9 +99,9 @@ async def get_code(message: types.Message, state: FSMContext):
         await state.finish()
 
 
-# Обработчик получения 2FA пароля от пользователя
 @dp.message_handler(content_types=types.ContentTypes.TEXT, state=SessionCreation.ask_2fa)
 async def get_2fa(message: types.Message, state: FSMContext):
+    """Обработчик получения 2FA пароля от пользователя"""
     await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)
     async with state.proxy() as _data:
         data = _data.as_dict()
@@ -123,6 +123,7 @@ async def get_2fa(message: types.Message, state: FSMContext):
 
 
 def account_connection_handler():
+    """Обработчик запроса на подключение аккаунта"""
     dp.register_message_handler(auth)
     dp.register_message_handler(get_number)
     dp.register_message_handler(get_code)

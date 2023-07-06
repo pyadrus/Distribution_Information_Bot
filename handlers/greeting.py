@@ -4,9 +4,9 @@ from keyboards.greeting_keyboards import greeting_keyboards
 from system.dispatcher import dp
 
 
-# Обработчик команды /start
 @dp.message_handler(commands="start")
 async def start(message: types.Message):
+    """Обработчик команды /start"""
     greeting_post = (f"👋 Привет, {message.from_user.first_name}!\n\n"
                      f"<i>Я 🤖 бот для parsing постов с групп и каналов в вашу группу.\n\n"
                      f"Я могу помочь вам автоматически собирать посты с различных 💬 групп и каналов и "
