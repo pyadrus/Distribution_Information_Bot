@@ -3,11 +3,12 @@ import time
 from aiogram import types
 from pyrogram import Client, filters
 
-from data.sqlipe_ut import read_parsing_groups
+from utils.sqlipe_utils import read_parsing_groups
 from system.dispatcher import dp, bot, tg_id, tg_hash
 
 
 async def forward_message(client, message, group_id_pars, group_id_post):
+    """Фильтр для обработки всех сообщений в исходной группе"""
     print(message)
     if str(message.chat.id) == str(int(group_id_pars)):
         if message.media_group_id is None:
@@ -36,6 +37,7 @@ async def post(account_id, group_id_pars, group_id_post):
 
 @dp.callback_query_handler(lambda c: c.data == "parsing_run")
 async def run_parsing(callback_query: types.CallbackQuery):
+    """Запуск parsing постов"""
     await callback_query.answer()
     await bot.send_message(callback_query.from_user.id, "Парсинг постов запущен!")
 

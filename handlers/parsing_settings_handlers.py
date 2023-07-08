@@ -6,6 +6,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 
 from keyboards.parsing_keyboards import parsing_keyboards
 from system.dispatcher import dp, bot
+from utils.sqlipe_utils import writing_channel_group_ids_to_database
 
 
 @dp.callback_query_handler(lambda c: c.data == "post_parsing_settings")
@@ -20,12 +21,6 @@ class GroupIdConnection(StatesGroup):
     ask_id_pars_post = State()
 
 
-conn = sqlite3.connect('setting/database.db')
-cursor = conn.cursor()
-cursor.execute("""CREATE TABLE IF NOT EXISTS parsing_groups(account_id, group_id_pars, group_id_post)""")
-conn.commit()
-
-
 @dp.callback_query_handler(lambda c: c.data == "connection_parsing")
 async def connection_parsing(callback_query: types.CallbackQuery):
     await callback_query.answer()
@@ -35,6 +30,7 @@ async def connection_parsing(callback_query: types.CallbackQuery):
 
 @dp.message_handler(state=GroupIdConnection.ask_id_pars_group, content_types=types.ContentType.TEXT)
 async def parsing_parsing(message: types.Message, state: FSMContext):
+    cursor, conn = writing_channel_group_ids_to_database()
     group_ids = message.text.split(',')
     group_ids = ['-{}'.format(id.strip()) if not id.startswith('-') else id.strip() for id in group_ids]
     group_ids_str = ','.join(group_ids)
@@ -50,6 +46,7 @@ async def parsing_parsing(message: types.Message, state: FSMContext):
 @dp.message_handler(state=GroupIdConnection.ask_id_pars_post, content_types=types.ContentType.TEXT)
 async def post_parsing(message: types.Message, state: FSMContext):
     group_id_post = message.text.strip()
+    cursor, conn = writing_channel_group_ids_to_database()
     cursor.execute("UPDATE parsing_groups SET group_id_post = ? WHERE account_id = ?",
                    (group_id_post, message.from_user.id))
     conn.commit()

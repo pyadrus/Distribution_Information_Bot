@@ -1,11 +1,10 @@
-import sqlite3
-
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from pyrogram import Client
 
 from system.dispatcher import dp, bot, tg_id, tg_hash
+from utils.sqlipe_utils import we_get_the_data_of_the_connected_accounts
 
 
 class FindOutUsername(StatesGroup):
@@ -23,11 +22,7 @@ async def find_out_username(callback_query: types.CallbackQuery):
 @dp.message_handler(state=FindOutUsername.find_out)
 async def find_out_username(message: types.Message, state: FSMContext):
     username_group = message.text
-    # Подключение к базе данных SQLite
-    conn = sqlite3.connect('setting/database.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM connected_accounts")
-    row = cursor.fetchone()
+    row = we_get_the_data_of_the_connected_accounts()
     if row:
         app = Client(f"accounts/{row[0]}/{row[1]}", api_id=tg_id, api_hash=tg_hash)
         await app.connect()
