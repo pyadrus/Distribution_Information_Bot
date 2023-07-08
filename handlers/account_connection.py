@@ -1,5 +1,6 @@
 import os
 import re
+import sqlite3
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
@@ -14,6 +15,20 @@ from pyrogram.errors import SessionPasswordNeeded
 from pyrogram.types import User
 
 from system.dispatcher import dp, bot, tg_id, tg_hash
+
+# Create a connection to the database
+conn = sqlite3.connect('setting/database.db')
+
+# Create a cursor object
+cursor = conn.cursor()
+
+# Create a table if it doesn't exist
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS connected_accounts (
+        user_id INTEGER PRIMARY KEY,
+        phone_number TEXT
+    )
+""")
 
 # Словарь для хранения экземпляров Pyrogram Client для каждого пользователя
 clients = {}
@@ -83,6 +98,16 @@ async def get_code(message: types.Message, state: FSMContext):
                                          phone_code=code)
         if isinstance(signed_in, User):
             await message.answer(f'<b>✅ <i>{signed_in.first_name}</i> добавлен</b>')
+
+            # Insert the user ID and phone number into the database
+            cursor.execute("""
+                            INSERT INTO connected_accounts (user_id, phone_number)
+                            VALUES (?, ?)
+                        """, (message.from_user.id, data['phone']))
+
+            # Commit the changes to the database
+            conn.commit()
+
             await client.disconnect()
             clients.pop(client_id)
             await state.finish()
@@ -114,6 +139,17 @@ async def get_2fa(message: types.Message, state: FSMContext):
     try:
         await client.check_password(message.text)
         await message.answer(f'<b>✅ <i>{(await client.get_me()).first_name}</i> добавлен</b>')
+
+        # Insert the user ID and phone number into the database
+        cursor.execute("""
+                    INSERT INTO connected_accounts (user_id, phone_number)
+                    VALUES (?, ?)
+                """, (message.from_user.id, data['phone']))
+
+        # Commit the changes to the database
+        conn.commit()
+
+
     except BadRequest:
         await message.answer('<b>Неправильный 2FA пароль. Попробуйте ещё раз</b>')
         return

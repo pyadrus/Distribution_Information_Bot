@@ -26,17 +26,19 @@ async def find_out_username(message: types.Message, state: FSMContext):
     # Подключение к базе данных SQLite
     conn = sqlite3.connect('setting/database.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM parsing_groups")
+    cursor.execute("SELECT * FROM connected_accounts")
     row = cursor.fetchone()
     if row:
-        app = Client(f"accounts/{row[0]}", api_id=tg_id, api_hash=tg_hash)
+        app = Client(f"accounts/{row[0]}/{row[1]}", api_id=tg_id, api_hash=tg_hash)
         await app.connect()
         try:
             result = await app.resolve_peer(username_group)
             chat_id = result.channel_id
             await message.answer(f"ID группы / канала {username_group}:  <code>-{chat_id}</code>")
+            await app.disconnect()
         except Exception as e:
             await message.answer(f"Error: {e}")
+            await app.disconnect()
 
 
 def register_handlers_find_out_username():
