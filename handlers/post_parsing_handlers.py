@@ -3,7 +3,7 @@ import time
 from aiogram import types
 from pyrogram import Client, filters
 
-from utils.sqlipe_utils import read_parsing_groups
+from utils.sqlipe_utils import read_parsing_groups, we_get_the_data_of_the_connected_accounts
 from system.dispatcher import dp, bot, tg_id, tg_hash
 
 
@@ -24,15 +24,17 @@ async def forward_message(client, message, group_id_pars, group_id_post):
 
 async def post(account_id, group_id_pars, group_id_post):
     """Создание экземпляра клиента Pyrogram"""
-    app = Client(f"accounts/{account_id}", api_id=tg_id, api_hash=tg_hash)
+    row = we_get_the_data_of_the_connected_accounts()
+    if row:
+        app = Client(f"accounts/{row[0]}/{row[1]}", api_id=tg_id, api_hash=tg_hash)
+        # app = Client(f"accounts/{account_id}", api_id=tg_id, api_hash=tg_hash)
+        @app.on_message(filters.chat(int(group_id_pars)))
+        async def forward_message_wrapper(client, message):
+            """Фильтр для обработки всех сообщений в исходной группе"""
+            await forward_message(client, message, group_id_pars, group_id_post)
 
-    @app.on_message(filters.chat(int(group_id_pars)))
-    async def forward_message_wrapper(client, message):
-        """Фильтр для обработки всех сообщений в исходной группе"""
-        await forward_message(client, message, group_id_pars, group_id_post)
-
-    # Запуск клиента Pyrogram
-    await app.start()
+        # Запуск клиента Pyrogram
+        await app.start()
 
 
 @dp.callback_query_handler(lambda c: c.data == "parsing_run")

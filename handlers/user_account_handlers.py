@@ -1,6 +1,5 @@
 import os
 import re
-import sqlite3
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
