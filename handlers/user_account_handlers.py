@@ -30,7 +30,9 @@ class SessionCreation(StatesGroup):
 @dp.callback_query_handler(lambda c: c.data == "connection_new_account")
 async def auth(callback_query: types.CallbackQuery):
     await callback_query.answer()
-    await bot.send_message(callback_query.from_user.id, "<b>Напишите номер телефона в формате 79999999999</b>")
+    connect_ac_post = ("<b>Напишите номер 📱 телефона в формате 79999999999</b>\n\n"
+                       "Для возврата нажмите на /start")
+    await bot.send_message(callback_query.from_user.id, connect_ac_post)
     await SessionCreation.ask_number.set()
 
 

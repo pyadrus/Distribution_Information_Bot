@@ -14,7 +14,8 @@ class GroupIdConnection(StatesGroup):
 
 @dp.callback_query_handler(lambda c: c.data == "post_parsing_settings")
 async def parsing_parsing(callback_query: types.CallbackQuery):
-    parsing_post = "<b>Для начала работы давайте определимся с чем будем работать?</b>\n\n"
+    parsing_post = ("<b>Для начала работы давайте определимся с чем будем работать?</b>\n\n"
+                    "Для возврата введите команду /start\n\n")
     keyboards_parsing = parsing_keyboards()  # Клавиатура
     await bot.send_message(callback_query.from_user.id, parsing_post, reply_markup=keyboards_parsing)
 
@@ -51,8 +52,7 @@ async def post_parsing(message: types.Message, state: FSMContext):
     cursor.execute("UPDATE parsing_groups SET group_id_post = ? WHERE account_id = ?",
                    (group_id_post, message.from_user.id))
     conn.commit()
-    await bot.send_message(message.chat.id,
-                           "Настройки сохранены. Готово для parsing и постинга. Для возврата введите команду /start")
+    await bot.send_message(message.chat.id, "⚙️ Настройки сохранены 💾. Готово для parsing и постинга. Для возврата введите команду /start")
     await state.finish()
 
 
