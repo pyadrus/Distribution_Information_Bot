@@ -37,4 +37,4 @@ async def find_out_username(message: types.Message, state: FSMContext):
 
 
 def register_handlers_find_out_username():
-    dp.register_callback_query_handler(find_out_username)
+    dp.message.register(find_out_username)

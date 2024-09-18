@@ -149,7 +149,7 @@ async def get_2fa(message: types.Message, state: FSMContext):
 
 def account_connection_handler():
     """Обработчик запроса на подключение аккаунта"""
-    dp.register_message_handler(auth)
-    dp.register_message_handler(get_number)
-    dp.register_message_handler(get_code)
-    dp.register_message_handler(get_2fa)
+    dp.message.register(auth)
+    dp.message.register(get_number)
+    dp.message.register(get_code)
+    dp.message.register(get_2fa)

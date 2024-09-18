@@ -57,6 +57,5 @@ async def post_parsing(message: types.Message, state: FSMContext):
 
 
 def register_handlers_post_parsing_setting():
-    dp.register_callback_query_handler(parsing_parsing, lambda c: c.data == "post_parsing_settings")
-    dp.register_message_handler(parsing_parsing)
-    dp.register_message_handler(post_parsing)
+    dp.message.register(parsing_parsing)
+    dp.message.register(post_parsing)

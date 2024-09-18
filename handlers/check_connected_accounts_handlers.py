@@ -26,4 +26,4 @@ async def check_connected_accounts_handlers(callback_query: types.CallbackQuery)
 
 
 def register_check_connected_accounts_handlers():
-    dp.register_message_handler(check_connected_accounts_handlers)
+    dp.message.register(check_connected_accounts_handlers)

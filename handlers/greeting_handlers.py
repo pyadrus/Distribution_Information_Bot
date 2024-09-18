@@ -14,4 +14,4 @@ async def start(message: types.Message):
 
 def start_handler():
     """Регистрируем handlers start"""
-    dp.register_message_handler(start)  # Обработчик команды /start, он же пост приветствия
+    dp.message.register(start)# Обработчик команды /start, он же пост приветствия

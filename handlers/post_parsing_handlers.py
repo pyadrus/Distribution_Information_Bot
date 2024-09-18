@@ -52,4 +52,4 @@ async def run_parsing(callback_query: types.CallbackQuery):
 
 
 def register_handlers_post_parsing():
-    dp.register_callback_query_handler(run_parsing)
+    dp.message.register(run_parsing)

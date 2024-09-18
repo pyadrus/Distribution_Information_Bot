@@ -8,7 +8,7 @@ from handlers.username_handlers import register_handlers_find_out_username
 from handlers.greeting_handlers import start_handler
 from handlers.post_parsing_handlers import register_handlers_post_parsing
 from handlers.parsing_settings_handlers import register_handlers_post_parsing_setting
-from system.dispatcher import dp
+from system.dispatcher import dp, bot
 from handlers.help_handlers import register_handlers_help
 
 logger.add("logs/log.log", retention="1 days", enqueue=True)  # Логирование бота

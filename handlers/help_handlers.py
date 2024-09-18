@@ -10,4 +10,4 @@ async def help_handlers(callback_query: types.CallbackQuery):
 
 
 def register_handlers_help():
-    dp.register_message_handler(help_handlers)
+    dp.message.register(help_handlers)
