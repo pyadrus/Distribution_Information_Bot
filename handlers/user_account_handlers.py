@@ -73,7 +73,7 @@ async def get_number(message: Message, state: FSMContext):
         await state.set_state(SessionCreation.ask_number)
 
 
-@router.message(state=SessionCreation.ask_code)
+@router.message(SessionCreation.ask_code)
 async def get_code(message: types.Message, state: FSMContext):
     """Обработчик получения кода подтверждения от пользователя"""
     await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)
@@ -114,7 +114,7 @@ async def get_code(message: types.Message, state: FSMContext):
         await state.clear()
 
 
-@router.message(state=SessionCreation.ask_2fa)
+@router.message(SessionCreation.ask_2fa)
 async def get_2fa(message: types.Message, state: FSMContext):
     """Обработчик получения 2FA пароля от пользователя"""
     await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)

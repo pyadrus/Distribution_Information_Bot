@@ -1,10 +1,11 @@
 import time
 
-from aiogram import types
+from aiogram import types, F
 from pyrogram import Client, filters
 
-from utils.sqlipe_utils import read_parsing_groups, we_get_the_data_of_the_connected_accounts
 from system.dispatcher import dp, bot, tg_id, tg_hash
+from system.dispatcher import router
+from utils.sqlipe_utils import read_parsing_groups, we_get_the_data_of_the_connected_accounts
 
 
 async def forward_message(client, message, group_id_pars, group_id_post):
@@ -36,8 +37,7 @@ async def post(account_id, group_id_pars, group_id_post):
         # Запуск клиента Pyrogram
         await app.start()
 
-
-@dp.callback_query_handler(lambda c: c.data == "parsing_run")
+@router.callback_query(F.data == "parsing_run")
 async def run_parsing(callback_query: types.CallbackQuery):
     """Запуск parsing постов"""
     await callback_query.answer()
