@@ -13,6 +13,7 @@ class FindOutUsername(StatesGroup):
     """Создание машины состояний для обработки сообщений"""
     find_out = State()
 
+
 @router.callback_query(F.data == "find_out_username")
 async def find_out_username(callback_query: types.CallbackQuery, state: FSMContext):
     text = "Введите username в виде @username группы или канала, чтобы узнать ID"
