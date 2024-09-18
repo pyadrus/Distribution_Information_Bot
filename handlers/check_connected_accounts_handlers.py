@@ -1,9 +1,12 @@
 import sqlite3
-from aiogram import types
-from system.dispatcher import dp, bot
+
+from aiogram import types, F
+
+from system.dispatcher import bot, dp
+from system.dispatcher import router
 
 
-@dp.callback_query_handler(lambda c: c.data == "check_connected_accounts")
+@router.callback_query(F.data == "check_connected_accounts")
 async def check_connected_accounts_handlers(callback_query: types.CallbackQuery):
     """Вывод списка подключенных аккаунтов"""
     user_id = callback_query.from_user.id  # Получите конкретный user_id из callback_query

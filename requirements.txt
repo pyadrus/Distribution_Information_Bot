@@ -1,2 +1,4 @@
-aiogram==2.25.1
-loguru==0.7.1
+aiogram~=3.10.0
+loguru~=0.7.2
+configparser~=7.0.1
+Pyrogram~=2.0.106

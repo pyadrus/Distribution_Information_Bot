@@ -1,5 +1,7 @@
-from aiogram import executor
-
+import asyncio
+import logging
+import sys
+from loguru import logger
 from handlers.check_connected_accounts_handlers import register_check_connected_accounts_handlers
 from handlers.user_account_handlers import account_connection_handler
 from handlers.username_handlers import register_handlers_find_out_username
@@ -9,9 +11,10 @@ from handlers.parsing_settings_handlers import register_handlers_post_parsing_se
 from system.dispatcher import dp
 from handlers.help_handlers import register_handlers_help
 
+logger.add("logs/log.log", retention="1 days", enqueue=True)  # Логирование бота
 
-def main():
-    executor.start_polling(dp, skip_updates=True)
+async def main():
+    await dp.start_polling(bot)
     start_handler()  # Запуск бота через /start
     account_connection_handler()  # Подключение аккаунта
     register_handlers_post_parsing_setting()  # Настройка parsing
@@ -23,6 +26,8 @@ def main():
 
 if __name__ == '__main__':
     try:
-        main()  # Запуск бота
+        logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+        asyncio.run(main())
     except Exception as e:
-        print(e)
+        logger.exception(f"Ошибка: {e}")
+

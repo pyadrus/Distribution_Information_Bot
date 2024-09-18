@@ -1,9 +1,10 @@
 import os
 import re
 
-from aiogram import types
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram import types, F
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.types import Message
 from pyrogram import Client
 from pyrogram.errors import BadRequest
 from pyrogram.errors import FloodWait
@@ -12,8 +13,9 @@ from pyrogram.errors import PhoneCodeInvalid
 from pyrogram.errors import PhoneNumberInvalid
 from pyrogram.errors import SessionPasswordNeeded
 from pyrogram.types import User
-
+from aiogram.filters import StateFilter
 from system.dispatcher import dp, bot, tg_id, tg_hash
+from system.dispatcher import router
 from utils.sqlipe_utils import writing_account_data_to_the_database
 
 # Словарь для хранения экземпляров Pyrogram Client для каждого пользователя
@@ -27,20 +29,20 @@ class SessionCreation(StatesGroup):
     ask_2fa = State()
 
 
-@dp.callback_query_handler(lambda c: c.data == "connection_new_account")
-async def auth(callback_query: types.CallbackQuery):
+@router.callback_query(F.data == "connection_new_account")
+async def auth(callback_query: types.CallbackQuery, state: FSMContext):
     await callback_query.answer()
     connect_ac_post = ("<b>Напишите номер 📱 телефона в формате 79999999999</b>\n\n"
                        "Для возврата нажмите на /start")
     await bot.send_message(callback_query.from_user.id, connect_ac_post)
-    await SessionCreation.ask_number.set()
+    await state.set_state(SessionCreation.ask_number)
 
 
-@dp.message_handler(state=SessionCreation.ask_number, content_types=types.ContentTypes.TEXT)
-async def get_number(message: types.Message, state: FSMContext):
+@router.message(StateFilter(SessionCreation.ask_number))
+async def get_number(message: Message, state: FSMContext):
     """Обработчик получения номера телефона от пользователя"""
     phone = message.text
-    if re.match("\d{3}\d{3}\d{4}", phone):
+    if re.match(r"\d{3}\d{3}\d{4}", phone):
         await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)
         async with state.proxy() as data:
             client_id = str(message.from_user.id)
@@ -56,22 +58,22 @@ async def get_number(message: types.Message, state: FSMContext):
                 data['phone'] = phone
                 clients[client_id] = client
                 await message.answer(f'<b>Отправьте код подтверждения в таком виде: 1-2-3-4-5\n</b>')
-                await SessionCreation.ask_code.set()
+                await state.set_state(SessionCreation.ask_code)
             except FloodWait as e:
                 await message.answer(
                     f"<b>Слишком много попыток входа, попробуйте через <code>{e.value}</code> секунд</b>")
                 await client.disconnect()
-                await state.finish()
+                await state.clear()
             except PhoneNumberInvalid:
                 await message.answer("<b>Неверный номер телефона</b>")
                 await client.disconnect()
-                await state.finish()
+                await state.clear()
     else:
         await message.answer("<b>Неправильный формат номера телефона</b>")
-        await SessionCreation.ask_number.set()
+        await state.set_state(SessionCreation.ask_number)
 
 
-@dp.message_handler(state=SessionCreation.ask_code, content_types=types.ContentTypes.TEXT)
+@router.message(state=SessionCreation.ask_code)
 async def get_code(message: types.Message, state: FSMContext):
     """Обработчик получения кода подтверждения от пользователя"""
     await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)
@@ -98,21 +100,21 @@ async def get_code(message: types.Message, state: FSMContext):
 
             await client.disconnect()
             clients.pop(client_id)
-            await state.finish()
+            await state.clear()
     except PhoneCodeInvalid:
         await message.answer('<b>Неверный код</b>')
-        await SessionCreation.ask_code.set()
+        await state.set_state(SessionCreation.ask_code)
     except SessionPasswordNeeded:
         await message.answer('<b>Введите 2FA пароль</b>')
-        await SessionCreation.ask_2fa.set()
+        await state.set_state(SessionCreation.ask_2fa)
     except PhoneCodeExpired:
         await message.answer("<b>Срок действия кода подтверждения истек</b>")
         await client.disconnect()
         clients.pop(client_id)
-        await state.finish()
+        await state.clear()
 
 
-@dp.message_handler(content_types=types.ContentTypes.TEXT, state=SessionCreation.ask_2fa)
+@router.message(state=SessionCreation.ask_2fa)
 async def get_2fa(message: types.Message, state: FSMContext):
     """Обработчик получения 2FA пароля от пользователя"""
     await bot.send_chat_action(message.from_user.id, types.ChatActions.TYPING)
@@ -142,7 +144,7 @@ async def get_2fa(message: types.Message, state: FSMContext):
         return
     await client.disconnect()
     clients.pop(client_id)
-    await state.finish()
+    await state.clear()
 
 
 def account_connection_handler():
