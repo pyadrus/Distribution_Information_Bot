@@ -1,7 +1,7 @@
 import time
 
 from aiogram import types, F
-from pyrogram import Client, filters # TODO заменить на Telethon
+from pyrogram import Client, filters  # TODO заменить на Telethon
 
 from system.dispatcher import dp, bot, tg_id, tg_hash
 from system.dispatcher import router
@@ -37,12 +37,12 @@ async def post(account_id, group_id_pars, group_id_post):
         # Запуск клиента Pyrogram
         await app.start()
 
+
 @router.callback_query(F.data == "parsing_run")
 async def run_parsing(callback_query: types.CallbackQuery):
     """Запуск parsing постов"""
     await callback_query.answer()
     await bot.send_message(callback_query.from_user.id, "Парсинг постов запущен!")
-
     parsing_groups = read_parsing_groups()
     for row in parsing_groups:
         account_id = row[0]  # id аккаунта

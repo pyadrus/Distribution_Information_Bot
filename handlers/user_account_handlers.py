@@ -42,7 +42,6 @@ async def get_number(message: Message, state: FSMContext):
     # Проверка формата номера телефона
     if re.match(r"\d{3}\d{3}\d{4}", phone):
         await bot.send_chat_action(message.from_user.id, action="typing")
-
         # Создаем папку для хранения сессии
         client_id = str(message.from_user.id)
         session_folder = f"accounts/{message.from_user.id}"
@@ -52,7 +51,6 @@ async def get_number(message: Message, state: FSMContext):
         client = TelegramClient(session_file, api_id=tg_id, api_hash=tg_hash,
                                 system_version="4.16.30-vxCUSTOM")
         await client.connect()
-        # try:
         # Проверяем авторизацию пользователя
         if not await client.is_user_authorized():
             logger.info("Пользователь не авторизован")
@@ -68,7 +66,6 @@ async def get_number(message: Message, state: FSMContext):
             # Сообщаем пользователю об отправке кода и просим ввести его
             await message.answer(f'<b>Отправьте код подтверждения в таком виде: 1-2-3-4-5\n</b>')
             await state.set_state(SessionCreation.ask_code)
-
     else:
         await message.answer("<b>Неправильный формат номера телефона</b>")
         await state.set_state(SessionCreation.ask_number)
@@ -77,77 +74,57 @@ async def get_number(message: Message, state: FSMContext):
 @router.message(StateFilter(SessionCreation.ask_code))
 async def get_code(message: Message, state: FSMContext):
     """Обработчик получения кода подтверждения от пользователя"""
-
     code = message.text.replace('-', '')
     data = await state.get_data()
     client_id = data['client_id']
     client = clients[client_id]
-
     try:
         # Убираем параметр `phone_code` и используем `sign_in(phone, code)`
         signed_in = await client.sign_in(
             phone=data['phone'],
             code=code
         )
-
         user = await client.get_me()
         await message.answer(f'<b>✅ <i>{user.first_name}</i> добавлен</b>')
-
         recording_phone_number_account_that_user_connected(message, data)
-
         await client.disconnect()
         clients.pop(client_id)
         await state.clear()
-
     except SessionPasswordNeededError:
         await message.answer('<b>Введите 2FA пароль</b>')
         await state.set_state(SessionCreation.ask_2fa)
 
 
-
 @router.message(StateFilter(SessionCreation.ask_2fa))
 async def get_2fa(message: Message, state: FSMContext):
     """Обработчик получения 2FA пароля от пользователя"""
-
     await bot.send_chat_action(message.chat.id, action="typing")  # Отправляем действие "typing"
     data = await state.get_data()
-
     client_id = data['client_id']
     client = clients.get(client_id)
-
     try:
         await client.connect()
     except ConnectionError:
         await message.answer("<b>Ошибка соединения</b>")
         return
-
     try:
         # Используем `sign_in` с паролем 2FA
         await client.sign_in(password=message.text)
-
         user = await client.get_me()
         await message.answer(f'<b>✅ <i>{user.first_name}</i> добавлен</b>')
-
-
         exists = writing_phone_number_to_a_database(message, data)
-
         if not exists:
             checking_your_connected_account(message, data)
-
         else:
             await message.answer("<b>Этот аккаунт уже подключен</b>")
-
         await client.disconnect()
         clients.pop(client_id)
         await state.clear()
-
     except Exception as e:
         await message.answer(f"<b>Ошибка: {str(e)}</b>")
         await client.disconnect()
         clients.pop(client_id)
         await state.clear()
-
-
 
 
 def account_connection_handler():

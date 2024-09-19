@@ -17,6 +17,7 @@ def writing_channel_group_ids_to_database():
     conn.commit()
     return cursor, conn
 
+
 def write_data_into_database_account_id_and_group_id_from_which_you_want_parse_posts(message, group_ids_str):
     """
     Записываем данные в базу данных ID аккаунта и ID группы с которого нужно parsing посты
@@ -56,12 +57,14 @@ def recording_phone_number_account_that_user_connected(message, data):
                         """, (message.from_user.id, data['phone']))
     conn.commit()  # Подтверждаем изменения в базе данных
 
+
 def writing_phone_number_to_a_database(message, data):
     cursor, conn = writing_account_data_to_the_database()
     # Проверяем наличие записи перед вставкой
     cursor.execute("SELECT COUNT(*) FROM connected_accounts WHERE user_id = ?", (message.from_user.id,))
     exists = cursor.fetchone()[0]
     return exists
+
 
 def checking_your_connected_account(message, data):
     cursor, conn = writing_account_data_to_the_database()

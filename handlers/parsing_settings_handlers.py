@@ -34,14 +34,10 @@ async def connection_parsing(callback_query: types.CallbackQuery, state: FSMCont
 @router.message(GroupIdConnection.ask_id_pars_group)
 async def parsing_parsing(message: Message, state: FSMContext):
     """Записываем ID группы / канала в базу данных"""
-
     group_ids = message.text.split(',')
     group_ids = ['-{}'.format(id.strip()) if not id.startswith('-') else id.strip() for id in group_ids]
     group_ids_str = ','.join(group_ids)
-
     write_data_into_database_account_id_and_group_id_from_which_you_want_parse_posts(message, group_ids_str)
-
-
     await bot.send_message(message.chat.id, "Напишите ID группы, в которую нужно постить посты")
     await state.set_state(GroupIdConnection.ask_id_pars_post)
 
@@ -50,9 +46,7 @@ async def parsing_parsing(message: Message, state: FSMContext):
 async def post_parsing(message: Message, state: FSMContext):
     """Запись ID группы в которую нужно публиковать посты"""
     group_id_post = message.text.strip()
-
     record_id_group_to_which_posts_should_be_published(group_id_post, message)
-
     await bot.send_message(message.chat.id,
                            "⚙️ Настройки сохранены 💾. Готово для parsing и постинга. Для возврата введите команду /start")
     await state.clear()

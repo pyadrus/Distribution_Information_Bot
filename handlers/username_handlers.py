@@ -2,8 +2,8 @@ from aiogram import types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message
-from pyrogram import Client # TODO заменить на Telethon
-
+from telethon import TelegramClient, errors
+from loguru import logger
 from system.dispatcher import dp, bot, tg_id, tg_hash
 from system.dispatcher import router
 from utils.sqlipe_utils import we_get_the_data_of_the_connected_accounts
@@ -15,28 +15,42 @@ class FindOutUsername(StatesGroup):
 
 
 @router.callback_query(F.data == "find_out_username")
-async def find_out_username(callback_query: types.CallbackQuery, state: FSMContext):
+async def find_out_username_prompt(callback_query: types.CallbackQuery, state: FSMContext):
     text = "Введите username в виде @username группы или канала, чтобы узнать ID"
-    await bot.send_message(callback_query.from_user.id, text)
+    await bot.send_message(callback_query.from_user.id, text, parse_mode="HTML")
     await state.set_state(FindOutUsername.find_out)
 
 
 @router.message(FindOutUsername.find_out)
-async def find_out_username(message: Message, state: FSMContext):
-    username_group = message.text
+async def process_find_out_username(message: Message, state: FSMContext):
+    username_group = message.text.strip()
+
     row = we_get_the_data_of_the_connected_accounts()
+    logger.info(row)
     if row:
-        app = Client(f"accounts/{row[0]}/{row[1]}", api_id=tg_id, api_hash=tg_hash)
-        await app.connect()
+        logger.info(row[1])
+        client = TelegramClient(f"accounts/{message.from_user.id}/{row[1]}", api_id=tg_id, api_hash=tg_hash,
+                                system_version="4.16.30-vxCUSTOM")
+        logger.info(message.from_user.id)
+        await client.connect()
+
         try:
-            result = await app.resolve_peer(username_group)
-            chat_id = result.channel_id
-            await message.answer(f"ID группы / канала {username_group}:  <code>-{chat_id}</code>")
-            await app.disconnect()
+            entity = await client.get_entity(username_group)
+
+            # Проверяем, является ли это каналом или группой
+            if hasattr(entity, 'id') and hasattr(entity, 'megagroup'):
+                chat_id = entity.id
+                await message.answer(f"ID группы / канала {username_group}: <code>{chat_id}</code>", parse_mode="HTML")
+            else:
+                await message.answer(f"Не удалось найти ID для {username_group}. Это не группа или канал.", parse_mode="HTML")
+        except errors.UsernameInvalidError:
+            await message.answer("Неправильный username. Попробуйте снова.", parse_mode="HTML")
         except Exception as e:
-            await message.answer(f"Error: {e}")
-            await app.disconnect()
+            await message.answer(f"Произошла ошибка: {e}", parse_mode="HTML")
+        finally:
+            await client.disconnect()
+            await state.clear()
 
 
 def register_handlers_find_out_username():
-    dp.message.register(find_out_username)
+    dp.message.register(process_find_out_username, FindOutUsername.find_out)
