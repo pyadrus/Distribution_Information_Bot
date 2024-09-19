@@ -1,21 +1,17 @@
-import sqlite3
-
 from aiogram import types, F
 
 from system.dispatcher import bot, dp
 from system.dispatcher import router
+from utils.sqlipe_utils import checking_connected_accounts
 
 
 @router.callback_query(F.data == "check_connected_accounts")
 async def check_connected_accounts_handlers(callback_query: types.CallbackQuery):
     """Вывод списка подключенных аккаунтов"""
     user_id = callback_query.from_user.id  # Получите конкретный user_id из callback_query
-    conn = sqlite3.connect('setting/database.db')
-    cursor = conn.cursor()
-    # Получить подключенные учетные записи для определенного user_id
-    cursor.execute("SELECT phone_number FROM connected_accounts WHERE user_id = ?", (user_id,))
-    # Получить все строки, возвращенные запросом
-    rows = cursor.fetchall()
+
+    rows = checking_connected_accounts(user_id)
+
     # Создайте текстовое сообщение с подключенными учетными записями
     text = "✅ Подключенные аккаунты:\n\n"
     for row in rows:

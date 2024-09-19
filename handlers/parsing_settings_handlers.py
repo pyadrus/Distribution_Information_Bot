@@ -1,11 +1,13 @@
+from aiogram import types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram import types, F
+from aiogram.types import Message
+
 from keyboards.parsing_keyboards import parsing_keyboards
 from system.dispatcher import dp, bot
 from system.dispatcher import router
-from utils.sqlipe_utils import writing_channel_group_ids_to_database
-from aiogram.types import Message
+from utils.sqlipe_utils import write_data_into_database_account_id_and_group_id_from_which_you_want_parse_posts, \
+    record_id_group_to_which_posts_should_be_published
 
 
 class GroupIdConnection(StatesGroup):
@@ -32,14 +34,13 @@ async def connection_parsing(callback_query: types.CallbackQuery, state: FSMCont
 @router.message(GroupIdConnection.ask_id_pars_group)
 async def parsing_parsing(message: Message, state: FSMContext):
     """Записываем ID группы / канала в базу данных"""
-    cursor, conn = writing_channel_group_ids_to_database()
+
     group_ids = message.text.split(',')
     group_ids = ['-{}'.format(id.strip()) if not id.startswith('-') else id.strip() for id in group_ids]
     group_ids_str = ','.join(group_ids)
-    # Записываем данные в базу данных ID аккаунта и ID группы с которого нужно parsing посты
-    cursor.execute("INSERT INTO parsing_groups (account_id, group_id_pars) VALUES (?, ?)",
-                   (message.from_user.id, group_ids_str))
-    conn.commit()
+
+    write_data_into_database_account_id_and_group_id_from_which_you_want_parse_posts(message, group_ids_str)
+
 
     await bot.send_message(message.chat.id, "Напишите ID группы, в которую нужно постить посты")
     await state.set_state(GroupIdConnection.ask_id_pars_post)
@@ -49,10 +50,9 @@ async def parsing_parsing(message: Message, state: FSMContext):
 async def post_parsing(message: Message, state: FSMContext):
     """Запись ID группы в которую нужно публиковать посты"""
     group_id_post = message.text.strip()
-    cursor, conn = writing_channel_group_ids_to_database()
-    cursor.execute("UPDATE parsing_groups SET group_id_post = ? WHERE account_id = ?",
-                   (group_id_post, message.from_user.id))
-    conn.commit()
+
+    record_id_group_to_which_posts_should_be_published(group_id_post, message)
+
     await bot.send_message(message.chat.id,
                            "⚙️ Настройки сохранены 💾. Готово для parsing и постинга. Для возврата введите команду /start")
     await state.clear()

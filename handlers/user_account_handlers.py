@@ -12,7 +12,8 @@ from telethon.errors import (SessionPasswordNeededError)
 
 from system.dispatcher import dp, bot, tg_id, tg_hash
 from system.dispatcher import router
-from utils.sqlipe_utils import writing_account_data_to_the_database
+from utils.sqlipe_utils import writing_account_data_to_the_database, recording_phone_number_account_that_user_connected, \
+    writing_phone_number_to_a_database, checking_your_connected_account
 
 # Словарь для хранения экземпляров Pyrogram Client для каждого пользователя
 clients = {}
@@ -92,14 +93,7 @@ async def get_code(message: Message, state: FSMContext):
         user = await client.get_me()
         await message.answer(f'<b>✅ <i>{user.first_name}</i> добавлен</b>')
 
-        cursor, conn = writing_account_data_to_the_database()
-
-        # Вставляем данные пользователя в базу данных
-        cursor.execute("""
-                        INSERT INTO connected_accounts (user_id, phone_number)
-                        VALUES (?, ?)
-                    """, (message.from_user.id, data['phone']))
-        conn.commit()  # Подтверждаем изменения в базе данных
+        recording_phone_number_account_that_user_connected(message, data)
 
         await client.disconnect()
         clients.pop(client_id)
@@ -134,18 +128,12 @@ async def get_2fa(message: Message, state: FSMContext):
         user = await client.get_me()
         await message.answer(f'<b>✅ <i>{user.first_name}</i> добавлен</b>')
 
-        cursor, conn = writing_account_data_to_the_database()
 
-        # Проверяем наличие записи перед вставкой
-        cursor.execute("SELECT COUNT(*) FROM connected_accounts WHERE user_id = ?", (message.from_user.id,))
-        exists = cursor.fetchone()[0]
+        exists = writing_phone_number_to_a_database(message, data)
 
         if not exists:
-            cursor.execute("""
-                            INSERT INTO connected_accounts (user_id, phone_number)
-                            VALUES (?, ?)
-                        """, (message.from_user.id, data['phone']))
-            conn.commit()  # Подтверждаем изменения в базе данных
+            checking_your_connected_account(message, data)
+
         else:
             await message.answer("<b>Этот аккаунт уже подключен</b>")
 
