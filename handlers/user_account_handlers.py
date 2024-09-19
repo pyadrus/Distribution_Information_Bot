@@ -10,6 +10,7 @@ from loguru import logger
 from telethon import TelegramClient
 from telethon.errors import (SessionPasswordNeededError)
 
+from keyboards.greeting_keyboards import keyboard_return_start_menu
 from system.dispatcher import dp, bot, tg_id, tg_hash
 from system.dispatcher import router
 from utils.sqlipe_utils import recording_phone_number_account_that_user_connected, \
@@ -31,7 +32,8 @@ async def auth(callback_query: types.CallbackQuery, state: FSMContext):
     await callback_query.answer()
     connect_ac_post = ("<b>Напишите номер 📱 телефона в формате 79999999999</b>\n\n"
                        "Для возврата нажмите на /start")
-    await bot.send_message(callback_query.from_user.id, connect_ac_post, parse_mode="HTML")
+    await bot.send_message(callback_query.from_user.id, connect_ac_post, parse_mode="HTML",
+                           reply_markup=keyboard_return_start_menu())
     await state.set_state(SessionCreation.ask_number)
 
 

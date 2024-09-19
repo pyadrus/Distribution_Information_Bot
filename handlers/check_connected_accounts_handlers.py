@@ -1,5 +1,6 @@
 from aiogram import types, F
 
+from keyboards.greeting_keyboards import keyboard_return_start_menu
 from system.dispatcher import bot, dp
 from system.dispatcher import router
 from utils.sqlipe_utils import checking_connected_accounts
@@ -15,7 +16,7 @@ async def check_connected_accounts_handlers(callback_query: types.CallbackQuery)
     for row in rows:
         phone_number = row[0]  # Предполагая, что phone_number хранится в первом столбце
         text += f"📱 {phone_number}\n"
-    await bot.send_message(callback_query.from_user.id, text)
+    await bot.send_message(callback_query.from_user.id, text, reply_markup=keyboard_return_start_menu())
 
 
 def register_check_connected_accounts_handlers():

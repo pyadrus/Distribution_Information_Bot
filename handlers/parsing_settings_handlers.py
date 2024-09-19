@@ -3,6 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message
 
+from keyboards.greeting_keyboards import keyboard_return_start_menu
 from keyboards.parsing_keyboards import parsing_keyboards
 from system.dispatcher import dp, bot
 from system.dispatcher import router
@@ -27,7 +28,8 @@ async def parsing_parsing(callback_query: types.CallbackQuery, state: FSMContext
 async def connection_parsing(callback_query: types.CallbackQuery, state: FSMContext):
     """Настройка parsing постов группы / канала"""
     await callback_query.answer()
-    await bot.send_message(callback_query.from_user.id, "Напишите ID группы или канала, из которой нужно parsing посты")
+    await bot.send_message(callback_query.from_user.id, "Напишите ID группы или канала, из которой нужно parsing посты",
+                           reply_markup=keyboard_return_start_menu())
     await state.set_state(GroupIdConnection.ask_id_pars_group)
 
 
