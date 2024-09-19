@@ -12,7 +12,7 @@ from telethon.errors import (SessionPasswordNeededError)
 
 from system.dispatcher import dp, bot, tg_id, tg_hash
 from system.dispatcher import router
-from utils.sqlipe_utils import writing_account_data_to_the_database, recording_phone_number_account_that_user_connected, \
+from utils.sqlipe_utils import recording_phone_number_account_that_user_connected, \
     writing_phone_number_to_a_database, checking_your_connected_account
 
 # Словарь для хранения экземпляров Pyrogram Client для каждого пользователя

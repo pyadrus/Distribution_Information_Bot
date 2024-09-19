@@ -19,9 +19,9 @@ async def main():
     start_handler()  # Запуск бота через /start
     account_connection_handler()  # Подключение аккаунта
     register_handlers_post_parsing_setting()  # Настройка parsing
-    register_handlers_post_parsing()
+    register_handlers_post_parsing() # Парсинг сообщений групп / канала
     register_handlers_find_out_username()  # Узнать ID группы / канала
-    register_handlers_help()
+    register_handlers_help() # Помощь пользователю
     register_check_connected_accounts_handlers()  # Узнать подключенные аккаунты
 
 

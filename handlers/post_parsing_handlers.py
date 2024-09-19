@@ -1,7 +1,7 @@
 import time
 
 from aiogram import types, F
-from pyrogram import Client, filters
+from pyrogram import Client, filters # TODO заменить на Telethon
 
 from system.dispatcher import dp, bot, tg_id, tg_hash
 from system.dispatcher import router

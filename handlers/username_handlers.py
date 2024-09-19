@@ -2,7 +2,7 @@ from aiogram import types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message
-from pyrogram import Client
+from pyrogram import Client # TODO заменить на Telethon
 
 from system.dispatcher import dp, bot, tg_id, tg_hash
 from system.dispatcher import router
