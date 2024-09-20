@@ -17,8 +17,8 @@ async def start(message: Message):
 @router.callback_query(F.data == "start_menu")
 async def start_menu_handlers(callback_query: types.CallbackQuery):
     """Помощь пользователю"""
-    # text = "Для использование 🤖 бота, ➕ подключите аккаунт и вам может потребоваться ID группы и канала"
-    await bot.send_message(callback_query.from_user.id, greeting_post, reply_markup=greeting_keyboards(), parse_mode="HTML")
+    await bot.send_message(callback_query.from_user.id, greeting_post, reply_markup=greeting_keyboards(),
+                           parse_mode="HTML")
 
 
 def start_handler():
