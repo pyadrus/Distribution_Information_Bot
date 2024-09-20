@@ -59,11 +59,7 @@ async def get_number(message: Message, state: FSMContext):
             # Отправляем код подтверждения
             sent_code = await client.send_code_request(phone)
             # Сохраняем данные в состоянии FSM
-            await state.update_data(
-                client_id=client_id,
-                code_hash=sent_code.phone_code_hash,
-                phone=phone
-            )
+            await state.update_data(client_id=client_id, code_hash=sent_code.phone_code_hash, phone=phone)
             clients[client_id] = client
             # Сообщаем пользователю об отправке кода и просим ввести его
             await message.answer(f'<b>Отправьте код подтверждения в таком виде: 1-2-3-4-5\n</b>')
@@ -82,10 +78,7 @@ async def get_code(message: Message, state: FSMContext):
     client = clients[client_id]
     try:
         # Убираем параметр `phone_code` и используем `sign_in(phone, code)`
-        signed_in = await client.sign_in(
-            phone=data['phone'],
-            code=code
-        )
+        signed_in = await client.sign_in(phone=data['phone'], code=code)
         user = await client.get_me()
         await message.answer(f'<b>✅ <i>{user.first_name}</i> добавлен</b>')
         recording_phone_number_account_that_user_connected(message, data)

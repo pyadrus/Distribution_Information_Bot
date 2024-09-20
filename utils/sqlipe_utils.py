@@ -9,6 +9,16 @@ def we_get_the_data_of_the_connected_accounts():
     row = cursor.fetchone()
     return row
 
+# def group_id_entry_for_publication():
+#     conn = sqlite3.connect('setting/database.db')
+#     cursor = conn.cursor()
+#     cursor.execute("""CREATE TABLE IF NOT EXISTS parsing_groups (account_id, group_id_pars, group_id_post)""")
+#     conn.commit()
+#     cursor.execute("INSERT INTO parsing_groups (account_id, group_id_pars) VALUES (?, ?)",
+#                    (message.from_user.id, group_ids_str))
+#     conn.commit()
+
+
 
 def writing_channel_group_ids_to_database():
     conn = sqlite3.connect('setting/database.db')
